@@ -1,9 +1,15 @@
 import { randomUUID } from 'crypto';
 import { DataBase } from './database.js';
 import { buildRoutePath } from './utils/build-route-path.js';
-import { doesTaskExists } from './utils/doesTaskExists.js';
 
 const dataBase = new DataBase();
+
+export const doesTaskExists = (id) => {
+	const tasks = dataBase.select('tasks');
+	const task = tasks.find((item) => item.id === id);
+
+	return task;
+};
 
 export const routes = [
 	{
@@ -27,8 +33,9 @@ export const routes = [
 				id: randomUUID(),
 				title,
 				description,
-				created_at: new Date(),
+				completed: false,
 				completed_at: null,
+				created_at: new Date(),
 				updated_at: null,
 			};
 
@@ -74,6 +81,37 @@ export const routes = [
 			dataBase.delete('tasks', id);
 
 			return res.writeHead(201).end('Tarefa excluida com sucesso.');
+		},
+	},
+	{
+		method: 'PATCH',
+		path: buildRoutePath('/tasks/:id'),
+		handler: (req, res) => {
+			const { id } = req.params;
+
+			const task = doesTaskExists(id);
+			console.log(task);
+
+			if (!task) {
+				return res.writeHead(400).end('Tarefa não localizada.');
+			}
+
+			const updatedTask = {
+				...task,
+				completed_at: new Date(),
+				updated_at: new Date(),
+				completed: !task.completed,
+			};
+
+			console.log('updatedTask: ', updatedTask);
+
+			dataBase.update('tasks', id, updatedTask);
+
+			const responseText = !task.completed
+				? 'Tarefa marcada como concluida!'
+				: 'Tarefa marcada como não concluida!';
+
+			return res.writeHead(201).end(responseText);
 		},
 	},
 ];
