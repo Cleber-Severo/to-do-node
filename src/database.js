@@ -53,4 +53,9 @@ export class DataBase {
 			this.#persist();
 		}
 	}
+
+	delete(table, id) {
+		this.#database[table] = this.#database[table].filter((row) => row.id !== id);
+		this.#persist();
+	}
 }

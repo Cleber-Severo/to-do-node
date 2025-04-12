@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { DataBase } from './database.js';
 import { buildRoutePath } from './utils/build-route-path.js';
+import { doesTaskExists } from './utils/doesTaskExists.js';
 
 const dataBase = new DataBase();
 
@@ -43,8 +44,7 @@ export const routes = [
 			const { id } = req.params;
 			const { title, description } = req.body;
 
-			const tasks = dataBase.select('tasks');
-			const task = tasks.find((item) => item.id === id);
+			const task = doesTaskExists(id);
 
 			if (!task) {
 				return res.writeHead(400).end('Tarefa não localizada.');
@@ -57,6 +57,23 @@ export const routes = [
 			});
 
 			return res.writeHead(201).end('Tarefa Atualizada com sucesso');
+		},
+	},
+	{
+		method: 'DELETE',
+		path: buildRoutePath('/tasks/:id'),
+		handler: (req, res) => {
+			const { id } = req.params;
+
+			const task = doesTaskExists(id);
+
+			if (!task) {
+				return res.writeHead(400).end('Tarefa não localizada.');
+			}
+
+			dataBase.delete('tasks', id);
+
+			return res.writeHead(201).end('Tarefa excluida com sucesso.');
 		},
 	},
 ];
