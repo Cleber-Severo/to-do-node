@@ -36,4 +36,27 @@ export const routes = [
 			return res.writeHead(201).end('Tarefa adicionada com sucesso');
 		},
 	},
+	{
+		method: 'PUT',
+		path: buildRoutePath('/tasks/:id'),
+		handler: (req, res) => {
+			const { id } = req.params;
+			const { title, description } = req.body;
+
+			const tasks = dataBase.select('tasks');
+			const task = tasks.find((item) => item.id === id);
+
+			if (!task) {
+				return res.writeHead(400).end('Tarefa não localizada.');
+			}
+
+			dataBase.update('tasks', id, {
+				title: title ? title : task.title,
+				description: description ? description : task.description,
+				updated_at: new Date(),
+			});
+
+			return res.writeHead(201).end('Tarefa Atualizada com sucesso');
+		},
+	},
 ];
